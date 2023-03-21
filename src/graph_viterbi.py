@@ -1,8 +1,3 @@
-__author__ = 'Runzhou'
-"""
-2022.1.7: This code modifies the scores by giving a stop codon penalty.
-"""
-
 import re
 import math
 import aminoacid as aa
