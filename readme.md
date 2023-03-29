@@ -6,7 +6,7 @@
 
 HMMPolish requires the following as input:
 + Reads file for graph construction.
-+ Backbone sequence file for graph construction (Can be either draft assembly from aseembly tools including Canu/Shasta/Flye etc, or the raw sequence).
++ Seed sequence file for graph construction (Can be either draft assembly from aseembly tools including Canu/Shasta/Flye etc, or the raw sequence).
 + pHMMs of targeted protein family/domain.
  
  
