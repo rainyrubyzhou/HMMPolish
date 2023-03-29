@@ -1,4 +1,3 @@
-__author__ = 'Nan'
 from Bio import SeqIO
 from Bio import SearchIO
 import aligngraph

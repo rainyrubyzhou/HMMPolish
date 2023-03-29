@@ -1,9 +1,6 @@
-__author__ = 'Nan'
-
 from Bio import SeqIO
 import subprocess
-import process
-import aligngraph as ag
+import graph_main
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
@@ -64,7 +61,7 @@ def pair_m5_seq(seq, m5_align_list):
     :param m5_align_list:
     :return: dag_align:
     """
-    dag_align = process.DagAlign(seq)
+    dag_align = graph_main.DagAlign(seq)
     for m5_align in m5_align_list:
         dag_align.add_alignment(m5_align)
 
@@ -79,9 +76,9 @@ def dna_transalate(fasta_path):
     """
     path_root = fasta_path.split(".fasta")[0]
     p_fasta = path_root + "_pep.fasta"
-    dna2pep_path = "/home/runzhouyu2/tools/dna2pep-1.1/dna2pep.py"
+    dna2pep_path = "dna2pep/dna2pep.py"
     
-    dna2pep_cmd = "python " + dna2pep_path +" -r all --fasta " + p_fasta + " " + fasta_path
+    dna2pep_cmd = "python " + dna2pep_path +" -r all -O FASTA --fasta " + p_fasta + " " + fasta_path
     p = subprocess.run(dna2pep_cmd, shell = True, check = True)
     """
     p = subprocess.Popen(dna2pep_cmd , shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -95,9 +92,11 @@ def hmmer_consensus(hmm_path, consensus_path):
     domtbl_path = dir_path+"/" + old_name.split(".fasta")[0] + "_domtbl.out"
     print(domtbl_path)
     
-    #hmmpress_cmd = "hmmpress " + hmm_path 
-    #p1 = subprocess.run(hmmpress_cmd, shell = True, check = True)
-    
+    hmmpress_cmd = "hmmpress " + hmm_path 
+    try:
+        p1 = subprocess.run(hmmpress_cmd, shell = True, check = True)
+    except Exception as error:
+        print("HMMs already pressed, please delete all HMM index files and retry!")
     hmmer_cmd = "hmmscan --domtblout " + domtbl_path + " -E 1000 " + hmm_path + " " + consensus_path
     p2 = subprocess.run(hmmer_cmd, shell = True, check = True)
     """
@@ -119,13 +118,13 @@ def produce_concensus(seed_file, fasta_file):
     m5_align = blasr_compare(seed, fasta_file) #will include all reads 
     seq_dict = SeqIO.index(seed, "fasta")
     m5_handle = open(m5_align)
-    m5_dict = process.read_m5(m5_handle)
+    m5_dict = graph_main.read_m5(m5_handle)
     seq_con_pos_dict = {}
     for seq_key in seq_dict:
         print(seq_key)
         if seq_key in m5_dict:
             network_align = pair_m5_seq(seq_dict[seq_key], m5_dict[seq_key])
-            aln_graph = process.construct_network(network_align)
+            aln_graph = graph_main.construct_network(network_align)
             s,c, cov, c_start, c_end = aln_graph.generate_consensus()
             #print("nodes:", len(aln_graph.nodes), "\t edges:", len(aln_graph.edges) ,"\nconsensus:", s[0:10])
             seq_con_pos_dict[seq_key] = [c_start, c_end]
@@ -144,12 +143,12 @@ if __name__ == "__main__":
     m5_align = blasr_compare(seed, short)
     seq_dict = SeqIO.index(seed, "fasta")
     m5_handle = open(m5_align)
-    m5_dict = process.read_m5(m5_handle)
+    m5_dict = graph_main.read_m5(m5_handle)
     for seq_key in seq_dict:
         print(seq_key)
         print(m5_dict)
         network_align = pair_m5_seq(seq_dict[seq_key], m5_dict[seq_key])
-        aln_graph = process.construct_network(network_align)
+        aln_graph = graph_main.construct_network(network_align)
         s,c, cov = aln_graph.generate_consensus()
         print(s)
 

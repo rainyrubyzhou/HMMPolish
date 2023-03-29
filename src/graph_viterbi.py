@@ -1,6 +1,5 @@
 import re
 import math
-import aminoacid as aa
 import aligngraph as ag
 import numpy as np
 
@@ -272,10 +271,10 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                         codon[1] = predecessor[0].base
                         codon[2] = node_i.base
 
-                        aa_emission = aa.translation(codon[0], codon[1],
+                        aa_emission = ag.translation(codon[0], codon[1],
                                                      codon[2])
 
-                        aa_index = aa.aminoacidindex(aa_emission)
+                        aa_index = ag.aminoacidindex(aa_emission)
 
                         # print "restart", score_temp
                         # only when the find ancestor return 3 node, we need to consider transition
@@ -309,7 +308,7 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                         score_em = -1
                         score_temp = -1
                         
-                        if aa.aminoacidindex == 20:
+                        if ag.aminoacidindex == 20:
                             penalty_sc = psc #penalty for stop codon
                             #score_em = -1
                             #score_temp = -1
@@ -417,12 +416,7 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                 scores[i][j] = score_max_em
 
     score = state_x[dna_len - 1][1]
-    print(score)
-        # / math.log10(2.0)
-    # print flags[3791][47][1]
-    
-    
-    print("ave possible path", np.mean(len_pre))
+    #print(score)
     
     """
     traceback
@@ -569,13 +563,13 @@ def alignment_score(hmm, alignment):
 
         if i == 0:
             # begin to match
-            aa_index = aa.aminoacidindex(seq[i])
+            aa_index = ag.aminoacidindex(seq[i])
             score += hmm.match_emission[hmm_pos][aa_index] - hmm.match_emission[0][aa_index]
         else:
             if int(state[i]) == 0:
                 # match state
                 hmm_pos += 1
-                aa_index = aa.aminoacidindex(seq[i])
+                aa_index = ag.aminoacidindex(seq[i])
                 if int(state[i - 1]) == 0:
                     score += hmm.transition[hmm_pos - 1][m_to_m] + hmm.match_emission[hmm_pos][aa_index] - \
                              hmm.match_emission[0][aa_index]
@@ -590,7 +584,7 @@ def alignment_score(hmm, alignment):
 
             elif int(state[i]) == 1:
                 # insertion
-                aa_index = aa.aminoacidindex(seq[i])
+                aa_index = ag.aminoacidindex(seq[i])
                 if int(state[i - 1]) == 0:
                     score += hmm.transition[hmm_pos][m_to_i] + hmm.insert_emission[hmm_pos][aa_index] - \
                              hmm.match_emission[0][aa_index]
