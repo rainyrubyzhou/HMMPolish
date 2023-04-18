@@ -10,3 +10,17 @@ HMMPolish requires the following as input:
 + pHMMs of targeted protein family/domain.
  
  
+## Installation
+#### Dependencies
+- Conda
+- python
+- Required python package: **Biopython**>=1.70, networkx >= 2.5.1, pandas >= 1.1.3
+
+#### Installation
+```console
+git clone --recursive https://github.com/rainyrubyzhou/HMMPolish HMMPolish
+cd HMMPolish/src
+python HMMPolish.py -h
+```
+Successfull installation will end with usage information using above commands.
+
