@@ -97,6 +97,7 @@ def hmmer_consensus(hmm_path, consensus_path):
         p1 = subprocess.run(hmmpress_cmd, shell = True, check = True)
     except Exception as error:
         print("HMMs already pressed, please delete all HMM index files and retry!")
+        return
     hmmer_cmd = "hmmscan --domtblout " + domtbl_path + " -E 1000 " + hmm_path + " " + consensus_path
     p2 = subprocess.run(hmmer_cmd, shell = True, check = True)
     """

@@ -12,9 +12,10 @@ HMMPolish requires the following as input:
  
 ## Installation
 #### Dependencies
-- Conda
-- python
-- Required python package: **Biopython**>=1.70, networkx >= 2.5.1, pandas >= 1.1.3
+- Biopython
+- HMMER
+- pandas
+- BLASR
 
 #### Installation
 ```console
@@ -23,4 +24,47 @@ cd HMMPolish/src
 python HMMPolish.py -h
 ```
 Successfull installation will end with usage information using above commands.
+
+## Usage of the AccuVIR: 
+>**Command Usage:**
+```console
+python HMMPolish.py --read READFILE --seed SEEDFILE 
+                    --hmm HMMFILE -o OUTFILE -v V
+```
+
+>**Mandatory args:**
+```console
+--read  <str, e.g. "raw_HIV.fasta">
+Reads file for graph construction (in fasta format). 
+
+--seed | <str, e.g. "canu_contig.fasta">
+Backbone sequence file for graph construction (in fasta format). 
+
+--hmm | <str, e.g. "canu_contig.fasta">
+```
+>**Optional args:**
+```console
+-v | <float, e.g. 0.8>
+Weight of viterbi score in the recursive function (default: 0.9).
+
+-h | Print the usage information. 
+```
+
+
+>**Example usage:** 
+```console
+python HMMPolish.py --read test/test_noro.fa --seed test/canu_ass.fa --hmm test/7_noro_profile.hmm -o polished.fa
+```
++ `../data/test_noro.fa ` example reads file 
+
+>**Example Outputs:** 
++ `polished.fa` containing polished reads of coding regions covered by each pHMM.
+
+
+
+
+
+## Contact
+Other than raising issues on Github, you can also contact YU Runzhou (runzhouyu2-c@my.cityu.edu.hk) for help in installation/usage or any other related query.
+
 

@@ -20,8 +20,12 @@ def prepare(seq_file, output_file, seed_file, hmm_file, hmm_coef):
     dag_coef = 1 - hmm_coef
     ori_aln_graph = None
     #def ori_graph():
-    merge_cmd = "cat " + seq_file + " " + seed_file + " >" +  seq_file
-    p = subprocess.run(merge_cmd, shell = True, check = True)
+    try: 
+        merge_cmd = "cat " + seq_file + " " + seed_file + " >" +  seq_file
+        p = subprocess.run(merge_cmd, shell = True, check = True)
+    except subprocess.CalledProcessError:
+        print("Please input correct file paths for reads and seed files.")
+        return
     path, filename = graph_prepare.find_dir(output_file)
     consensus_file = path + "/" + filename.split(".fasta")[0] + "_consensus.fasta"
     output_handle = open(output_file, "w")
