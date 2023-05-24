@@ -74,11 +74,11 @@ def dna_transalate(fasta_path):
     :param fasta_path:
     :return: p_fasta:
     """
-    path_root = fasta_path.split(".fasta")[0]
-    p_fasta = path_root + "_pep.fasta"
+    path_root = fasta_path.split(".fa")[0]
+    p_fasta = path_root + "_pep.fa"
     dna2pep_path = "dna2pep/dna2pep.py"
     
-    dna2pep_cmd = "python " + dna2pep_path +" -r all -O FASTA --fasta " + p_fasta + " " + fasta_path
+    dna2pep_cmd = "python " + dna2pep_path +" -r all -O FASTA --fasta " + p_fasta + " " + fasta_path + " >log"
     p = subprocess.run(dna2pep_cmd, shell = True, check = True)
     """
     p = subprocess.Popen(dna2pep_cmd , shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -90,15 +90,21 @@ def hmmer_consensus(hmm_path, consensus_path):
     dir_path, old_name = find_dir(consensus_path)
     # print old_name
     domtbl_path = dir_path+"/" + old_name.split(".fasta")[0] + "_domtbl.out"
-    print(domtbl_path)
+    #print(domtbl_path)
     
+    rm_hmm_idx = "rm " + hmm_path + ".h3*"
     hmmpress_cmd = "hmmpress " + hmm_path 
+    #try: 
+    #    p = subprocess.run(rm_hmm_idx, shell = True, check = True)
+    #except subprocess.CalledProcessError:
+    #    print("HMM index not built")
     try:
-        p1 = subprocess.run(hmmpress_cmd, shell = True, check = True)
+        p = subprocess.run(hmmpress_cmd, shell = True, check = True)
     except Exception as error:
-        print("HMMs already pressed, please delete all HMM index files and retry!")
-        return
-    hmmer_cmd = "hmmscan --domtblout " + domtbl_path + " -E 1000 " + hmm_path + " " + consensus_path
+        print("Removing existing idx and rebuilding...")
+        p = subprocess.run(rm_hmm_idx, shell = True, check = True)
+        p = subprocess.run(hmmpress_cmd, shell = True, check = True)
+    hmmer_cmd = "hmmscan --domtblout " + domtbl_path + " -E 1000 " + hmm_path + " " + consensus_path + " >log"
     p2 = subprocess.run(hmmer_cmd, shell = True, check = True)
     """
     p = subprocess.Popen(hmmer_cmd , shell=True, executable='/bin/bash', stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -551,7 +551,7 @@ class AlnGraph(object):
         self.consensus_end = con_end
         # print self.consensus_start
         # print self.consensus_end
-        print("path score of consensus_path:", self.score(consensus_path))
+        print("consensus path score:", self.score(consensus_path))
         return consensus_path
 
     def generate_consensus(self, min_cov=0):
@@ -696,6 +696,7 @@ class AlnGraph(object):
             sum_score += self.get_edge_count(res[i], res[i+1])
         return sum_score
         '''
+        #print(res[0:5]) #[(node_id:140519079161296, base:B, b:False, w:0, c:0), (node_id:140519082681488, base:G, b:True, w:90, c:93)]
         return sum([self.get_edge_count(res[i],res[i+1]) for i in range(len(res)-2)])
 
     def all_topo_sort_util(self, res, nodes_visited, src_node, des_node, out):

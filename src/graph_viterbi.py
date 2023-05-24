@@ -70,7 +70,7 @@ class HmmModel:
     
                     hmm_pos = 0
                     # pos = 0, the match_emission is background emission
-                    print(" hmm model length: ", len(self.match_emission), len(self.match_emission[0]))
+                    #print(" hmm model length: ", len(self.match_emission), len(self.match_emission[0]))
                     for j in range(20):
                         line_split1 = re.split(" +", lines[i].strip("\n").strip("\r"))
                         if line_split1[j + 2] == "*":
@@ -169,10 +169,10 @@ def find_ancestor(aln_node):
     return node_list
 
 
-def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
+def viterbi(hmm_model, aln_graph, c_dag, c_hmm, psc = 1):
     """
     :param hmm_model: hmm model
-    :param sorted_nodes: a list of sorted nodes in graph
+    :param sorted_nodes: a list of topologically sorted nodes in graph
     """
     sorted_nodes = aln_graph.get_sorted_nodes()
     aln_graph.filter_graph()
@@ -187,8 +187,10 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
 
     hmm_len = hmm_model.length
     dna_len = len(sorted_nodes)
-    print(dna_len)
-
+    #print("dna_len: ", dna_len)
+    #ave_ratio = 0
+    #ratio_cnt = 0
+    #total_ratio = 0
     scores = [[[float("-inf") for x in range(4)] for x in range(hmm_len + 1)] for x in
               range(dna_len + 1)]  # score matrix for DP, score[i][0]:m score[i][1]:i score[i][2]:d score[i][3]:x
     state_x = [[float("-inf") for x in range(2)] for x in range(dna_len + 1)]
@@ -203,8 +205,6 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
     end_flag = [[0 for x in range(2)] for x in range(dna_len + 1)]
 
     # background = hmm_model.match_emission[0]
-    
-
     state_x[0][0] = 0.0
     state_x[0][1] = 0.0
 
@@ -262,161 +262,147 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                 score_max_em = [float("-inf"), float("-inf"), float("-inf"), float("-inf")]
 
 
-
-
-                for predecessor in predecessors:
-
-                    if len(predecessor) > 2:
-                        codon[0] = predecessor[1].base
-                        codon[1] = predecessor[0].base
-                        codon[2] = node_i.base
-
-                        aa_emission = ag.translation(codon[0], codon[1],
-                                                     codon[2])
-
-                        aa_index = ag.aminoacidindex(aa_emission)
-
-                        # print "restart", score_temp
-                        # only when the find ancestor return 3 node, we need to consider transition
-
-                        last_score_node = predecessor[2]
-                        path_node = [predecessor[2], predecessor[1], predecessor[0], node_i]
-
-                        path_score = 0
-                        extreme_path = False
-
-                        for i1, node in enumerate(path_node):
-                            for in_edge in node._in_edges:
-                                in_node = in_edge.in_node
-
-                                if i1 != 0 and in_node == path_node[i1 - 1]:
-
-                                    if in_node.backbone_node.coverage < 5:
-                                        backbone_node_coverage = in_node.backbone_node.coverage + 1
-                                    else:
-                                        backbone_node_coverage = in_node.backbone_node.coverage
-
-                                        
-                                    if node.is_backbone is True and node.weight == 1:
-                                        path_score -= backbone_penalty  # ln(0.5) - ln(0.45)
-                                    else:
-                                        path_score += in_edge.count - backbone_node_coverage * 0.5
-                                        
-                                        # path_score += round(math.log(in_edge.count / (backbone_node_coverage + 1.0)),5) - background_path
-
-                        penalty_sc =  1
-                        score_em = -1
-                        score_temp = -1
-                        
-                        if ag.aminoacidindex == 20:
-                            penalty_sc = psc #penalty for stop codon
-                            #score_em = -1
-                            #score_temp = -1
-                        
-                        score_em = penalty_sc * (c_hmm * (hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
-                            aa_index]) + c_dag * path_score + state_x[check_node_order[last_score_node.ID]][0])
-                        score_temp = penalty_sc * (c_dag * path_score + state_x[check_node_order[last_score_node.ID]][0])
-
-                        if score_temp > score_max[0]:
-                            score_max[0] = score_temp
-                            score_max_em[0] = score_em
-                            flags[i][j][0] = {"path": [predecessor[2],predecessor[1], predecessor[0]], "state": 4, "aa": aa_emission}
-
-                            # from match to match
-
-                        score_em = penalty_sc *(c_hmm * (
-                                hmm_model.transition[j - 1][m_to_m] +
-                                hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][aa_index]) \
-                                       + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][0])
-                        score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][m_to_m]) \
-                                         + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][0])
-
-                        if score_temp > score_max[0]:
-                            score_max[0] = score_temp
-                            score_max_em[0] = score_em
-                            flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 0,
-                                                  "aa": aa_emission}
-
-                            # from insertion to match
-                        score_em = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][i_to_m] +
-                                                hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
-                                                    aa_index]) \
-                                       + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][1])
-                        score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][i_to_m]) \
-                                         + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][1])
-                        if score_temp > score_max[0]:
-                            score_max[0] = score_temp
-                            score_max_em[0] = score_em
-                            flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 1,
-                                                  "aa": aa_emission}
-
-                        score_em = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][d_to_m] +
-                                                hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
-                                                    aa_index]) \
-                                       + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][2])
-                        score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][d_to_m]) \
-                                         + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][2])
-                        if score_temp > score_max[0]:
-                            score_max[0] = score_temp
-                            score_max_em[0] = score_em
-                            flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 2,
-                                                  "aa": aa_emission}
-
-                            """
-                            insertion state
-                            """
-                            # from match
-                        score_em = penalty_sc *(c_hmm * (
-                                hmm_model.transition[j][m_to_i] + hmm_model.insert_emission[j][aa_index] -
-                                hmm_model.match_emission[0][aa_index]) + c_dag * path_score + \
-                                       scores[check_node_order[last_score_node.ID]][j][0])
-                        score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j][m_to_i]) + c_dag * path_score + \
-                                         scores[check_node_order[last_score_node.ID]][j][0])
-
-                        if score_temp > score_max[1]:
-                            score_max[1] = score_temp
+            for predecessor in predecessors:
+                if len(predecessor) > 2:
+                    codon[0] = predecessor[1].base
+                    codon[1] = predecessor[0].base
+                    codon[2] = node_i.base
+                    aa_emission = ag.translation(codon[0], codon[1],
+                                                 codon[2])
+                    aa_index = ag.aminoacidindex(aa_emission)
+                    # only when the find ancestor return 3 node, we need to consider transition
+                    last_score_node = predecessor[2]
+                    path_node = [predecessor[2], predecessor[1], predecessor[0], node_i]
+                    path_score = 0
+                    path_weight = 0
+                    bb_weight = 0
+                    extreme_path = False
+                    for i1, node in enumerate(path_node):
+                        for in_edge in node._in_edges:
+                            in_node = in_edge.in_node
+                            if i1 != 0 and in_node == path_node[i1 - 1]:
+                                path_weight += in_edge.count
+                                bb_weight += in_node.backbone_node.coverage
+                                if in_node.backbone_node.coverage < 5:
+                                    backbone_node_coverage = in_node.backbone_node.coverage + 1
+                                else:
+                                    backbone_node_coverage = in_node.backbone_node.coverage
+                                    
+                                if node.is_backbone is True and node.weight == 1:
+                                    path_score -= backbone_penalty  # ln(0.5) - ln(0.45)
+                                else:
+                                    path_score += in_edge.count - backbone_node_coverage * 0.5
+                                    
+                                    # path_score += round(math.log(in_edge.count / (backbone_node_coverage + 1.0)),5) - background_path
+                    #total_ratio += path_weight/bb_weight
+                    #ratio_cnt += 1
+                    
+                    path_score = path_score/100
+                    #print("path score", path_score)
+                    #print("some viterbi score:", hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][aa_index])
+                    #print(( hmm_model.transition[j - 1][m_to_m] +
+                    #        hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][aa_index]) )
+                    penalty_sc =  1
+                    score_em = -1
+                    score_temp = -1
+                    
+                    if ag.aminoacidindex == 20:
+                        penalty_sc = psc #penalty for stop codon
+                        #score_em = -1
+                        #score_temp = -1
+                    
+                    score_em = penalty_sc * (c_hmm * (hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
+                        aa_index]) + c_dag * path_score + state_x[check_node_order[last_score_node.ID]][0])
+                    score_temp = penalty_sc * (c_dag * path_score + state_x[check_node_order[last_score_node.ID]][0])
+                    if score_temp > score_max[0]:
+                        score_max[0] = score_temp
+                        score_max_em[0] = score_em
+                        flags[i][j][0] = {"path": [predecessor[2],predecessor[1], predecessor[0]], "state": 4, "aa": aa_emission}
+                        # from match to match
+                    score_em = penalty_sc *(c_hmm * (
+                            hmm_model.transition[j - 1][m_to_m] +
+                            hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][aa_index]) \
+                                   + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][0])
+                    score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][m_to_m]) \
+                                     + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][0])
+                    if score_temp > score_max[0]:
+                        score_max[0] = score_temp
+                        score_max_em[0] = score_em
+                        flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 0,
+                                              "aa": aa_emission}
+                        # from insertion to match
+                    score_em = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][i_to_m] +
+                                            hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
+                                                aa_index]) \
+                                   + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][1])
+                    score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][i_to_m]) \
+                                     + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][1])
+                    if score_temp > score_max[0]:
+                        score_max[0] = score_temp
+                        score_max_em[0] = score_em
+                        flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 1,
+                                              "aa": aa_emission}
+                    score_em = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][d_to_m] +
+                                            hmm_model.match_emission[j][aa_index] - hmm_model.match_emission[0][
+                                                aa_index]) \
+                                   + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][2])
+                    score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j - 1][d_to_m]) \
+                                     + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j - 1][2])
+                    if score_temp > score_max[0]:
+                        score_max[0] = score_temp
+                        score_max_em[0] = score_em
+                        flags[i][j][0] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 2,
+                                              "aa": aa_emission}
+                        """
+                        insertion state
+                        """
+                        # from match
+                    score_em = penalty_sc *(c_hmm * (
+                            hmm_model.transition[j][m_to_i] + hmm_model.insert_emission[j][aa_index] -
+                            hmm_model.match_emission[0][aa_index]) + c_dag * path_score + \
+                                   scores[check_node_order[last_score_node.ID]][j][0])
+                    score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j][m_to_i]) + c_dag * path_score + \
+                                     scores[check_node_order[last_score_node.ID]][j][0])
+                    if score_temp > score_max[1]:
+                        score_max[1] = score_temp
+                        # score_max_em[1] = score_em
+                        score_max_em[1] = score_temp
+                        flags[i][j][1] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 0,
+                                              "aa": aa_emission}
+                        # from insertion
+                    score_em = penalty_sc *(c_hmm * (hmm_model.transition[j][
+                                                i_to_i] + hmm_model.insert_emission[j][aa_index] -
+                                            hmm_model.match_emission[0][
+                                                aa_index]) \
+                                   + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j][1])
+                    score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j][i_to_i]) \
+                                     + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j][1])
+                    if score_temp > score_max[1]:
+                        score_max[1] = score_temp
                             # score_max_em[1] = score_em
-                            score_max_em[1] = score_temp
-                            flags[i][j][1] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 0,
-                                                  "aa": aa_emission}
-
-                            # from insertion
-                        score_em = penalty_sc *(c_hmm * (hmm_model.transition[j][
-                                                    i_to_i] + hmm_model.insert_emission[j][aa_index] -
-                                                hmm_model.match_emission[0][
-                                                    aa_index]) \
-                                       + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j][1])
-
-                        score_temp = penalty_sc *(c_hmm * (hmm_model.transition[j][i_to_i]) \
-                                         + c_dag * path_score + scores[check_node_order[last_score_node.ID]][j][1])
-
-                        if score_temp > score_max[1]:
-                            score_max[1] = score_temp
-                                # score_max_em[1] = score_em
-                            score_max_em[1] = score_temp
-                            flags[i][j][1] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 1,
-                                                  "aa": aa_emission}
-
-                            """
-                            deletion state
-                            """
-                            # from match
-                        score_temp = scores[i][j - 1][0] + c_hmm * hmm_model.transition[j - 1][m_to_d]
-                        if score_temp > score_max[2]:
-                            score_max[2] = score_temp
-                            score_max_em[2] = score_temp
-                            flags[i][j][2] = {"path": [], "state": 0, "aa": "-"}
-                            # from deletion
-                        score_temp = scores[i][j - 1][2] + c_hmm * hmm_model.transition[j - 1][d_to_d]
-                        if score_temp > score_max[2]:
-                            score_max[2] = score_temp
-                            score_max_em[2] = score_temp
-                            flags[i][j][2] = {"path": [], "state": 2, "aa": "-"}
-
-                scores[i][j] = score_max_em
+                        score_max_em[1] = score_temp
+                        flags[i][j][1] = {"path": [predecessor[2], predecessor[1], predecessor[0]], "state": 1,
+                                              "aa": aa_emission}
+                        """
+                        deletion state
+                        """
+                        # from match
+                    score_temp = scores[i][j - 1][0] + c_hmm * hmm_model.transition[j - 1][m_to_d]
+                    if score_temp > score_max[2]:
+                        score_max[2] = score_temp
+                        score_max_em[2] = score_temp
+                        flags[i][j][2] = {"path": [], "state": 0, "aa": "-"}
+                        # from deletion
+                    score_temp = scores[i][j - 1][2] + c_hmm * hmm_model.transition[j - 1][d_to_d]
+                    if score_temp > score_max[2]:
+                        score_max[2] = score_temp
+                        score_max_em[2] = score_temp
+                        flags[i][j][2] = {"path": [], "state": 2, "aa": "-"}
+            scores[i][j] = score_max_em
 
     score = state_x[dna_len - 1][1]
-    #print(score)
+    #ave_ratio = total_ratio/ratio_cnt
+    #print("Path score confidence:(path weight/backbone weight)", ave_ratio)
     
     """
     traceback
@@ -434,7 +420,7 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
     ref_alignment = ""
     i_start = 0
     j_start = 0
-
+    nd_path = []
     pass_hmm = False
 
     while (i_track >= 0):
@@ -450,6 +436,7 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                 break
             elif sorted_nodes[i_track].base != "E":
                alignment = sorted_nodes[i_track].base + alignment
+               nd_path.insert(0, sorted_nodes[i_track])
             # new i_track
             i_track = check_node_order[path[0].ID]
             if last_state == 0:
@@ -470,6 +457,9 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                 alignment = sorted_nodes[i_track].base + alignment
                 alignment = path[2].base + alignment
                 alignment = path[1].base + alignment
+                nd_path.insert(0, sorted_nodes[i_track])
+                nd_path.insert(0, path[2])
+                nd_path.insert(0, path[1])
                 i_track = check_node_order[path[0].ID]
                 if state == 0:
                     if last_state == 4:
@@ -483,8 +473,6 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
                 else:
                     aa_alignment = aa_emit.lower() + aa_alignment
                     ref_alignment = "." + ref_alignment
-
-
 
         state = last_state
 
@@ -531,9 +519,27 @@ def viterbi(hmm_model, aln_graph, c_dag=0, c_hmm = 1, psc = 0.8):
 
         state = last_state
         """
+    
     traceback = {"alignment": alignment, "state": state_alignment, "score": score, "hmm_start": j_start,
                  "hmm_end": j_end, "seq_start": i_start, "seq_end": i_end, "aa": aa_alignment,
                  "score_track": score_track, "ref": ref_alignment}
+    #print("alignment:", traceback['alignment']) #alignment: GAACATCCTGGCA
+    #print("state:", traceback['state'])  #state: 4444444444
+    #print("score:", traceback['score'])  #score: 12653.319743999966
+    #print("aa:", traceback['aa'])
+    #print("score_track:", traceback['score_track'])
+    #print("ref:", traceback['ref'])
+    
+    aln_graph.consensus_path = aln_graph.find_best_path()
+    consen_wei = aln_graph.score(aln_graph.consensus_path)
+    bb_wei = aln_graph.score(aln_graph.backbone_nodes)
+    out_wei = aln_graph.score(nd_path)
+    print("node path score: ", out_wei)
+    print("consen path weight: ", consen_wei)
+    print("backbone path weight: ", bb_wei)
+    
+    print("node path/consen path:", out_wei/consen_wei)
+    print("node path/bb path:", out_wei/bb_wei)
 
     return traceback
 

@@ -22,16 +22,16 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=str, required = True,  help = "Seed file (in fasta format).")
     #parser.add_argument('-m', type=int, default = 500,  required=False, help = "Indicated Profile HMMs (in .hmm format).")
     parser.add_argument('--hmm', type=str, required = True, help = "Indicated Profile HMMs (in .hmm format).")
-    parser.add_argument('-o', type=str, required = False, default = "hmmpolish_out.fa",  help = "Output filename.")
-    
-    parser.add_argument('-v', type=float, default = 0.9,  required = False, help = "Weight of viterbi score in the recursive function. (Default = 0.9)")
+    parser.add_argument('-o', type=str, required = False, help = "Output filename.")
+    parser.add_argument('--wei', type=float, default = 0.9,  required = False, help = "Weight of viterbi score in the recursive function. (Default = 0.9)")
+    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
     args = parser.parse_args()
     print("Input files are:\n", " reads: ",  args.read, "\n  seed: ", args.seed, "\n  hmm:", args.hmm)
     seq_file = args.read
     seed_file = args.seed
     hmm_file = args.hmm    
-    hmm_coef = args.v
+    hmm_coef = args.wei
     output_file = args.o
 
-    polish_main.prepare(seq_file, output_file, seed_file, hmm_file, hmm_coef)
+    polish_main.prepare(seq_file, output_file, seed_file, hmm_file, hmm_coef, args.verbose)
