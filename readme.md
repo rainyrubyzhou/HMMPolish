@@ -60,7 +60,11 @@ python HMMPolish.py --read test/test_noro.fa --seed test/canu_ass.fa --hmm test/
 >**Example Outputs:** 
 + `polished.fa` containing polished reads of coding regions covered by each pHMM.
 
+## Data Availability
 
+We share the following related materials that may come to users' interest when using HMMPolish. Users can download it [here](https://drive.google.com/drive/folders/1A_3h7RW5gifErKqAMpMqENq4LWitkZ-Q?usp=drive_link).
+- Profiles of some common RNA viruses
+- Commands for preprocessing SARS-CoV-2 Illumina sequencing data
 
 
 
