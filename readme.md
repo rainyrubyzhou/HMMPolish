@@ -25,11 +25,11 @@ python HMMPolish.py -h
 ```
 Successfull installation will end with usage information using above commands.
 
-## Usage of the AccuVIR: 
+## Usage of HMMPolish: 
 >**Command Usage:**
 ```console
 python HMMPolish.py --read READFILE --seed SEEDFILE 
-                    --hmm HMMFILE -o OUTFILE -v V
+                    --hmm HMMFILE -o OUTFILE   --wei WEI      
 ```
 
 >**Mandatory args:**
@@ -44,8 +44,11 @@ Backbone sequence file for graph construction (in fasta format).
 ```
 >**Optional args:**
 ```console
--v | <float, e.g. 0.8>
+--wei WEI | <float, e.g. 0.8> 
 Weight of viterbi score in the recursive function (default: 0.9).
+
+-v, --verbose | increase output verbosity
+Will ouput the path score and the HMMER results of polished sequences under this mode.
 
 -h | Print the usage information. 
 ```
@@ -64,6 +67,7 @@ python HMMPolish.py --read test/test_noro.fa --seed test/canu_ass.fa --hmm test/
 
 We share the following related materials that may come to users' interest when using HMMPolish. Users can download it [here](https://drive.google.com/drive/folders/1A_3h7RW5gifErKqAMpMqENq4LWitkZ-Q?usp=drive_link).
 - Profiles of some common RNA viruses
+    (For viruses without provided profiles, users are suggested to search the related models in [Interpro](https://www.ebi.ac.uk/interpro/search/text/))
 - Commands for preprocessing SARS-CoV-2 Illumina sequencing data
 
 
