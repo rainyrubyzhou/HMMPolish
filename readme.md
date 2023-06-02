@@ -65,11 +65,7 @@ python HMMPolish.py --read test/test_noro.fa --seed test/canu_ass.fa --hmm test/
 
 ## Data Availability
 
-We share the following related materials that may come to users' interest when using HMMPolish. Users can download it [here](https://drive.google.com/drive/folders/1A_3h7RW5gifErKqAMpMqENq4LWitkZ-Q?usp=drive_link).
-- Profiles of some common RNA viruses
-    (For viruses without provided profiles, users are suggested to search the related models in [InterPro](https://www.ebi.ac.uk/interpro/search/text/))
-- Commands for preprocessing SARS-CoV-2 Illumina sequencing data
-
+Users can download the profiles of some common RNA viruses following the referred accession numbers we provided [here](src/common_profiles.md).
 
 
 ## Contact
