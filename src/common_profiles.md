@@ -1,4 +1,4 @@
-### Profile accesssion numbers for some commonly used viruses
+### Profile accesssion numbers for some common viruses
 
 #### Norovirus
 ```console
