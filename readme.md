@@ -3,10 +3,11 @@
 
 **HMMPolish** uses **Sequence Alignment Graph** 
  to represent multiple sequences and utilizes **Profile Hidden Markov Models** (pHMMs) to polish coding regions of target RNA virus. 
+ Users are welcome to read our published paper at Briefings in Bioinformatics [here](https://doi.org/10.1093/bib/bbad264) and try our tool as guided below.
 
 HMMPolish requires the following as input:
 + Reads file for graph construction.
-+ Seed sequence file for graph construction (Can be either draft assembly from aseembly tools including Canu/Shasta/Flye etc, or the raw sequence).
++ Seed sequence file for graph construction (Can be either draft assembly from assembly tools including Canu/Shasta/Flye etc, or the raw sequence).
 + pHMMs of targeted protein family/domain.
  
  
@@ -23,7 +24,7 @@ git clone --recursive https://github.com/rainyrubyzhou/HMMPolish HMMPolish
 cd HMMPolish/src
 python HMMPolish.py -h
 ```
-Successfull installation will end with usage information using above commands.
+Successful installation will end with usage information using the above commands.
 
 ## Usage of HMMPolish: 
 >**Command Usage:**
@@ -45,10 +46,10 @@ Backbone sequence file for graph construction (in fasta format).
 >**Optional args:**
 ```console
 --wei WEI | <float, e.g. 0.8> 
-Weight of viterbi score in the recursive function (default: 0.9).
+Weight of Viterbi score in the recursive function (default: 0.9).
 
 -v, --verbose | increase output verbosity
-Will ouput the path score and the HMMER results of polished sequences under this mode.
+Will output the path score and the HMMER results of polished sequences under this mode.
 
 -h | Print the usage information. 
 ```
